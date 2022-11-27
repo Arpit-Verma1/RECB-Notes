@@ -42,7 +42,6 @@ class _SignupWidgetState extends State<SignupWidget> {
     Size size=MediaQuery.of(context).size;
     return
       Form(
-
           key: formKey,
           child:SingleChildScrollView(child:
           Container(

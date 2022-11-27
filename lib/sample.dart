@@ -1,10 +1,18 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:major/add%20user.dart';
+
+import 'package:major/auth.dart';
 import 'package:major/civil.dart';
+import 'package:major/main.dart';
 import 'package:major/portfolio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,6 +32,7 @@ class Sample extends StatefulWidget {
 }
 
 class _SampleState extends State<Sample> {
+
   Color shadowcolor1=Colors.purpleAccent.shade700;
   List<String> items=["Information Technology","Electrical Engineering","Civil Engineering"];
   List<String> items1=["Information Technology","Electrical Engineering","Civil Engineering"];
@@ -51,9 +60,10 @@ class _SampleState extends State<Sample> {
      Civil(a: "Third year"),
      Civil(a: "Fourth year"),
   ];
-  bool _iconbool=false;
+  bool _iconbool=true;
+bool show1=false;
   IconData _iconlight=Icons.sunny;
-  DateTime timebackpressed=DateTime.now();
+
   IconData _icondarkt=Icons.nights_stay;
   ThemeData _lighttheme=ThemeData(
     primarySwatch: Colors.blue,
@@ -62,7 +72,26 @@ class _SampleState extends State<Sample> {
   ThemeData _darktheme=ThemeData(
     primarySwatch: Colors.blue,
     brightness: Brightness.dark,
-  );
+
+  ); String databasejson = "";
+  final user=FirebaseAuth.instance.currentUser;
+
+  late DatabaseReference _dbref;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin=FlutterLocalNotificationsPlugin();
+  @override
+  void initState(){
+    Timer.periodic(Duration(seconds: 2), (_)=>_readdb1());
+    _dbref = FirebaseDatabase.instance.ref();
+    _readdb1();
+    setState(() {
+
+    });
+
+    super.initState();
+
+
+
+  }
   @override
   Widget build(BuildContext context) {
     return MaterialApp(theme: _iconbool?_darktheme:_lighttheme,
@@ -636,6 +665,119 @@ class _SampleState extends State<Sample> {
                           });
                         },
                         value: selecteditem3),])),
+              ///////////////////////////
+              Visibility(visible: show1,
+                  child:
+                  Container(
+
+                    height: 40,
+                    width: MediaQuery.of(context).size.width,
+
+                    decoration: BoxDecoration(
+
+                        borderRadius: BorderRadius.only(
+
+                            bottomRight: Radius.circular(30),
+
+                            bottomLeft: Radius.circular(30),
+
+                            topLeft: Radius.circular(30),
+
+                            topRight: Radius.circular(30)),
+
+                        color: Colors.grey.shade900,
+
+                        boxShadow: [BoxShadow(blurRadius: 4)]),
+
+                    // width: 150,
+
+                    margin:
+
+                    EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+
+                    alignment: Alignment.center,
+                    child:
+                    Padding(padding: EdgeInsets.only(left: 5),child:GestureDetector(onTap:(){
+                      String t="";
+                      _dbref.child('User').once().then((DatabaseEvent databaseEvent) {
+                        setState(() async {
+                          t=databaseEvent.snapshot.value.toString();
+                          if(t.contains("${user!.email!}")){
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(SnackBar(
+                                duration: Duration(seconds: 3),
+                                content: Text("You are authorized ")));
+                            await Navigator.of(context).push(MaterialPageRoute(builder: (Context)=>add()));}
+                          else{
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(SnackBar(
+                                duration: Duration(seconds: 3),
+                                content: Text("You are not authorized ")));
+
+                          }});});
+                    },child:Row(mainAxisAlignment: MainAxisAlignment.center,
+                        children: [Icon(Icons.add,color: Colors.white,),
+                          SizedBox(width: 10,),
+                          Text('Add User'
+                              ,style: TextStyle(
+
+                                  fontSize: 15,
+
+                                  color: Colors.white,
+
+                                  fontWeight: FontWeight.w600)),]))
+
+                      ,),
+                  )),
+              /////////////////////////////////////
+              Container(
+
+                height: 40,
+                width: MediaQuery.of(context).size.width,
+
+                decoration: BoxDecoration(
+
+                    borderRadius: BorderRadius.only(
+
+                        bottomRight: Radius.circular(30),
+
+                        bottomLeft: Radius.circular(30),
+
+                        topLeft: Radius.circular(30),
+
+                        topRight: Radius.circular(30)),
+
+                    color: Colors.grey.shade900,
+
+                    boxShadow: [BoxShadow(blurRadius: 4)]),
+
+                // width: 150,
+
+                margin:
+
+                EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+
+                alignment: Alignment.center,
+                child:
+                Padding(padding: EdgeInsets.only(left: 5),child:GestureDetector(onTap:(){
+                  FirebaseAuth.instance.signOut().then((value) => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MyHomePage())));
+
+                  FirebaseAuth.instance.signOut();
+
+                },child:Row(mainAxisAlignment: MainAxisAlignment.center,
+                    children: [Icon(Icons.logout,color: Colors.white,),
+                SizedBox(width: 10,),
+                Text('Logout'
+                    ,style: TextStyle(
+
+                        fontSize: 15,
+
+                        color: Colors.white,
+
+                        fontWeight: FontWeight.w600)),]))
+
+                  ,),
+              ),//////////////////////////////////////////
     Container(
 
     height: 40,
@@ -741,13 +883,45 @@ class _SampleState extends State<Sample> {
               )))
             ]
       ),),
-      ) ), body:branch[index1],));
+      ) )
+        , body:branch[index1],));
   }
 
   Future getFileType(file)
   {
 
     return file.stat();
+
+  }
+  _readdb1(){
+    String t="";
+
+    _dbref.child('User').once().then((DatabaseEvent databaseEvent) {
+      setState((){
+        t=databaseEvent.snapshot.value.toString();
+        if(t.contains("${user!.email!}")){
+
+          setState(() {
+            show1=true;
+
+          });
+          setState(() {
+
+          });
+
+        }
+        else{
+          setState(() {
+            show1=false;
+
+          });
+          setState(() {
+
+          });
+        }}
+      );
+    });
+
 
   }
 

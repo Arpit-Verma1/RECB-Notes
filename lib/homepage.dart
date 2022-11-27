@@ -1,19 +1,21 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:avatar_glow/avatar_glow.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:major/pdfview.dart';
+import 'package:major/speechapi.dart';
 import 'package:major/upload.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import 'Utils.dart';
 import 'firebase_options.dart';
 
 class MyHomePage1 extends StatefulWidget {
-  const MyHomePage1({Key? key, required this.c,}) : super(key: key);
+  const MyHomePage1({Key? key, required this.c}) : super(key: key);
   final String c;
 
   @override
@@ -21,56 +23,82 @@ class MyHomePage1 extends StatefulWidget {
 }
 
 class _MyHomePageState1 extends State<MyHomePage1> {
-
+  int user = 0;
+  late int i;
+  List<String> users = ["arpitv747@gmail.com",];
   late Future<ListResult>? futureFiles;
   Map<int, double> downloadProgress = {};
-
-  
-
+  bool equalsIgnoreCase(String string1, String string2) {
+    return string1?.toLowerCase() == string2?.toLowerCase();
+  }
   @override
   void initState() {
     super.initState();
-
+    _dbref = FirebaseDatabase.instance.ref();
+    _readdb1();
     futureFiles = FirebaseStorage.instance.ref("${widget.c}").listAll();
   }
-  Color shadowcolor1=Colors.purpleAccent.shade700;
 
-bool icon=false;
-int c=0;
+  Color shadowcolor1 = Colors.purpleAccent.shade700;
+
+  bool icon = false;
+  int c = 0;
+  bool islistening=false;
+  late DatabaseReference _dbref;
+  String databasejson = "";
+  int count = 0;
+  TextEditingController controller =TextEditingController();
+
   @override
-  Widget build(BuildContext context){
-    Size size=MediaQuery.of(context).size;
-    final user=FirebaseAuth.instance.currentUser;
-     return Scaffold(
-       backgroundColor: Colors.black,
+  Widget build(BuildContext context) {
+    Size size = MediaQuery
+        .of(context)
+        .size;
+    final user = FirebaseAuth.instance.currentUser;
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.black,
         appBar: AppBar(
-          title: Text('${widget.c}',style: TextStyle(fontSize: 17),),
+
+          title: Text(widget.c),
           backgroundColor: Colors.grey.shade600,
+
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         floatingActionButton: OutlinedButton(
-            style: OutlinedButton.styleFrom(
+          style: OutlinedButton.styleFrom(
             shape: CircleBorder(),
-       side: BorderSide(width: 3.0, color: Colors.white),
-       backgroundColor: Colors.black,
-       padding: EdgeInsets.all(10),
-     ),
-          onPressed: ()async{
-          if("${user!.email!}"=="arpitv747@gmail.com"){
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar( 
-                duration: Duration(seconds: 3),
-                content: Text("You are authorized to upload ")));
-         await Navigator.of(context).push(MaterialPageRoute(builder: (context)=>upload(a: "${widget.c}"))).then((value) => setState(() => {
-          futureFiles = FirebaseStorage.instance.ref("${widget.c}").listAll()
-          }));}else{
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar( backgroundColor: Colors.red,
-                duration: Duration(seconds: 3),
-                content: Text("You are not authorized to upload request authority to upload")));
-          }}
-        ,
-          child: Icon(Icons.upload,size: 35,color: Colors.white,shadows: [Shadow(
+            side: BorderSide(width: 3.0, color: Colors.white),
+            backgroundColor: Colors.black,
+            padding: EdgeInsets.all(10),
+          ),
+          onPressed: () async {
+              if (true == databasejson.contains("${user!.email!}")) {
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(
+                    duration: Duration(seconds: 3),
+                    content: Text("You are authorized to upload ")));
+                await Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => upload(a: "${widget.c}"))).then((
+                    value) =>
+                    setState(() =>
+                    {
+                      futureFiles =
+                          FirebaseStorage.instance.ref("${widget.c}").listAll()
+                    }));
+
+              }
+            else {
+              print(databasejson.contains("${user!.email!}"));
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(backgroundColor: Colors.red,
+                  duration: Duration(seconds: 3),
+                  content: Text(
+                      "You are not authorized to upload request authority to upload")));
+            }
+          },
+          child: Icon(
+              Icons.upload, size: 35, color: Colors.white, shadows: [Shadow(
             color: shadowcolor1,
             blurRadius: 3,
           ),
@@ -81,91 +109,184 @@ int c=0;
             Shadow(
               color: shadowcolor1,
               blurRadius: 9,
-            ),]),),
-        body: Container(height: size.height,
-          decoration: BoxDecoration(image: DecorationImage(image: AssetImage("assets/liight.jpeg"))),child:
-        FutureBuilder<ListResult>(
-          future: futureFiles,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final files = snapshot.data!.items;
-              return ListView.builder(
-                itemCount: files.length, itemBuilder: (context, index) {
-                final file = files[index];
-                double? progress = downloadProgress[index];
+            ),
+          ]),),
+        body:
+        Container(height: size.height,
+          decoration: BoxDecoration(
+              image: DecorationImage(image: AssetImage("assets/liight.jpeg"))),
+          child:
+              Column(children: [Container(color: Colors.transparent,
+    child:
+    Padding(padding: EdgeInsets.only(left: 20,top: 8),child:
+    Row(
+    children: [
+    SizedBox(width: size.width*0.7,
+    height: size.height*0.07,
 
-                return Column(children: [
-                  Divider(),
-                  Container(
-                    child:
-                    Column(
-                        children: [
-                          ClipRRect(
+    child:
+    TextField(
+    controller: controller,
+      style: TextStyle(color: Colors.white),
+    decoration: new InputDecoration(
+enabledBorder:  OutlineInputBorder(borderRadius: BorderRadius.circular(15),borderSide: BorderSide(color:Colors.white,width: 2)),
+    focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(15.0),
+    borderSide: BorderSide(
+    color: Colors.white
+    ,width: 2
+    ),
+    ),
 
-                            borderRadius: BorderRadius
-                                .circular(15),
-                            child: BackdropFilter(
-                              filter: ImageFilter
-                                  .blur(
-                                  sigmaX: 15,
-                                  sigmaY: 15),
-                              child:
-                              Container(
-                                  width: size.width *
-                                      0.8,
-                                  height: size.height *
-                                      0.1,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white
-                                        .withOpacity(
-                                        0.3),
-                                    borderRadius: BorderRadius
-                                        .circular(15),
-                                    border: Border.all(
-                                        width: 2,
-                                        color: Colors
-                                            .white30),
-                                  ),
-                                  child: ListTile(
-                                    trailing: IconButton(
-                                        icon: Icon(
-                                          Icons.download,
-                                          color: Colors.white,
-                                        ),
+    contentPadding:
+    EdgeInsets.only(top: 10,bottom: 10),prefixIcon: Icon(Icons.search,color: Colors.white,),
+    filled: false,
+    hintText: 'Search Your Notes',
 
-                                        onPressed: () {
-                                          openFile(index: index, ref: file);
-                                        }),
+    hintStyle: TextStyle(color: Colors.white),
 
-                                    subtitle: progress!=null?LinearProgressIndicator(
-                                      value: progress,
-                                      color: Color.fromARGB(255,255,184,28),
-                                      backgroundColor: Color.fromARGB(255,255,184,28),
-                                    ):null,title:Text(file.name, style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight
-                                        .bold,
-                                    color: Colors
-                                        .white,
-                                  )),
-                                  )
+
+    ),
+    )),
+    SizedBox(
+    width: size.width*0.02,
+    ),
+      AvatarGlow(  animate:islistening, endRadius:40,glowColor: Colors.white,showTwoGlows: true,
+        child:
+    SizedBox(
+    width: size.width*0.15,
+    height: size.height*0.07,
+    child:
+    ElevatedButton(
+    style: ButtonStyle(
+    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+    RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(55.0),
+    side: BorderSide(width:2, color:Colors.white),
+    ),
+    ),
+    backgroundColor:  MaterialStateProperty.all<Color>(Colors.transparent)
+    ),
+    onPressed: (
+
+    ){
+      togglerecording();
+    }, child:Icon(islistening?Icons.mic:Icons.mic_none,size: 25,color: Colors.white,),
+    )),),
+
+    ]
+    ))),
+
+                Expanded(child:
+          FutureBuilder<ListResult>(
+            future: futureFiles,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final files = snapshot.data!.items;
+                return ListView.builder(
+                    itemCount: files.length, itemBuilder: (context, index) {
+                  final file = files[index];
+                  double? progress = downloadProgress[index];
+                  final String a=file.name.toLowerCase();
+                  return Column(children: [
+                    Divider(),
+                    Visibility(visible: a.contains(controller.text.toLowerCase()),
+                    child: Container(
+                      child:
+                      Column(
+                          children: [
+                            ClipRRect(
+
+                              borderRadius: BorderRadius
+                                  .circular(15),
+                              child: BackdropFilter(
+                                filter: ImageFilter
+                                    .blur(
+                                    sigmaX: 15,
+                                    sigmaY: 15),
+                                child:
+                                Container(
+                                    width: size.width *
+                                        0.8,
+                                    height: size.height *
+                                        0.1,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white
+                                          .withOpacity(
+                                          0.3),
+                                      borderRadius: BorderRadius
+                                          .circular(15),
+                                      border: Border.all(
+                                          width: 2,
+                                          color: Colors
+                                              .white30),
+                                    ),
+                                    child: ListTile(
+
+                                      /*IconButton(
+                                          icon: Icon(
+                                            Icons.heart_broken,
+                                            color: Colors.white,
+                                          ),
+
+                                          onPressed: () {
+
+                                          })*/
+trailing:IconButton(
+                                              icon: Icon(
+                                                Icons.download,
+                                                color: Colors.white,
+                                              ),
+
+                                              onPressed: () {
+                                                updateone(widget.c,
+                                                    file.name.substring(
+                                                        0, file.name.indexOf('.')));
+                                                openFile(index: index, ref: file);
+                                              }),
+
+                                      subtitle: progress != null
+                                          ? LinearProgressIndicator(
+                                        value: progress,
+                                        color: Color.fromARGB(
+                                            255, 255, 184, 28),
+                                        backgroundColor: Color.fromARGB(
+                                            255, 255, 184, 28),
+
+                                      )
+                                          : null,
+
+                                      title: Text(file.name, style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight
+                                            .bold,
+                                        color: controller.text==file.name ?Colors.red:Colors
+                                            .white,
+                                      )),
+                                    )
+                                ),
                               ),
                             ),
-                          ),
-                        ]
-                    ),),]);
+                          ]
+                      ),),
+                    )
+                  ]);
+                }
+
+                );
+              } else if (snapshot.hasError) {
+                return const Center(
+                  child: Text('error'),
+                );
+              } else {
+                return const Center(child: CircularProgressIndicator());
               }
-                ,);
-            } else if (snapshot.hasError) {
-              return const Center(
-                child: Text('error'),
-              );
-            } else {
-              return const Center(child: CircularProgressIndicator());
-            }
-          },
-        ),)
-      );}
+            },
+
+
+    )),]))
+    );
+  }
 
   Future openFile({required int index, required Reference ref}) async {
     final file = await downloadfile(index, ref);
@@ -181,12 +302,11 @@ int c=0;
       final temdir = await getApplicationDocumentsDirectory();
       final path = File('${temdir.path}/${ref.name}');
       final response = await Dio().get(url,
-          onReceiveProgress: (received,total){
-        double progress=received/total;
-        setState((){
-
-          downloadProgress[index]=progress;
-        });
+          onReceiveProgress: (received, total) {
+            double progress = received / total;
+            setState(() {
+              downloadProgress[index] = progress;
+            });
           },
           options: Options(
             responseType: ResponseType.bytes,
@@ -205,8 +325,9 @@ int c=0;
       return null;
     }
   }
+
   Future downloadfile1(int index, Reference ref) async {
-    final url=await ref.getDownloadURL();
+    final url = await ref.getDownloadURL();
     Directory? directory;
     try {
       if (Platform.isAndroid) {
@@ -248,15 +369,13 @@ int c=0;
               receiveTimeout: 0,)
 
         );
-        print("$saveFile arpit");
-
       }
-
-    }catch(e){
+    } catch (e) {
       print(e);
     }
     /////////////////////////////////////
   }
+
   Future<bool> _requestPermission(Permission permission) async {
     if (await permission.isGranted) {
       return true;
@@ -268,48 +387,35 @@ int c=0;
     }
     return false;
   }
-}
-class RPSCustomPainter extends CustomPainter{
 
-  @override
-  void paint(Canvas canvas, Size size) {
+  updateone(String a, String b) {
+   _dbref.child(a).child(b).once().then((DatabaseEvent databaseEvent) {
+     setState((){
+       int k=databaseEvent.snapshot.value==null?0:databaseEvent.snapshot.value as int;
+       if(k==null){
+         setState(() {
+           k=1;
+         });
+       }
+       _dbref.child(a).update({b:k + 1});
+     });
+   });
 
-
-
-    Paint paint0 = Paint()
-      ..color = const Color.fromARGB(255, 230, 122, 222)
-      ..style = PaintingStyle.fill
-      ..strokeWidth = 1.0;
-
-
-    Path path0 = Path();
-    path0.moveTo(size.width*0.7958300,size.height*0.1316200);
-    path0.cubicTo(size.width*0.8217200,size.height*0.1631800,size.width*0.8214300,size.height*0.1879800,size.width*0.8299700,size.height*0.2067600);
-    path0.cubicTo(size.width*0.8577600,size.height*0.1861000,size.width*0.8734200,size.height*0.1915000,size.width*0.8818300,size.height*0.2016200);
-    path0.cubicTo(size.width*0.8891300,size.height*0.2522000,size.width*0.8792200,size.height*0.2804000,size.width*0.8768300,size.height*0.3036200);
-    path0.cubicTo(size.width*0.9133900,size.height*0.3372200,size.width*0.9117800,size.height*0.3588200,size.width*0.9158300,size.height*0.3696200);
-    path0.cubicTo(size.width*0.9091800,size.height*0.4128400,size.width*0.8896100,size.height*0.4274600,size.width*0.8778300,size.height*0.4376200);
-    path0.cubicTo(size.width*0.8879500,size.height*0.4971800,size.width*0.8842500,size.height*0.5194000,size.width*0.8818300,size.height*0.5436200);
-    path0.quadraticBezierTo(size.width*0.8577500,size.height*0.5588600,size.width*0.8288300,size.height*0.5316200);
-    path0.quadraticBezierTo(size.width*0.8173700,size.height*0.5904800,size.width*0.7968300,size.height*0.6116200);
-    path0.cubicTo(size.width*0.7823800,size.height*0.5960400,size.width*0.7683000,size.height*0.5740000,size.width*0.7618300,size.height*0.5356200);
-    path0.cubicTo(size.width*0.7473700,size.height*0.5408200,size.width*0.7327000,size.height*0.5592200,size.width*0.7108300,size.height*0.5427600);
-    path0.cubicTo(size.width*0.7078400,size.height*0.5192600,size.width*0.7024300,size.height*0.4913400,size.width*0.7148300,size.height*0.4396200);
-    path0.cubicTo(size.width*0.6988100,size.height*0.4288200,size.width*0.6770300,size.height*0.3992400,size.width*0.6758300,size.height*0.3736200);
-    path0.cubicTo(size.width*0.6776000,size.height*0.3504200,size.width*0.6908300,size.height*0.3199800,size.width*0.7148300,size.height*0.3036200);
-    path0.cubicTo(size.width*0.7113000,size.height*0.2826800,size.width*0.7031000,size.height*0.2556200,size.width*0.7098300,size.height*0.2016200);
-    path0.cubicTo(size.width*0.7342300,size.height*0.1860200,size.width*0.7488300,size.height*0.2004200,size.width*0.7618300,size.height*0.2076200);
-    path0.cubicTo(size.width*0.7652000,size.height*0.1897600,size.width*0.7686200,size.height*0.1646800,size.width*0.7958300,size.height*0.1316200);
-    path0.close();
-
-    canvas.drawPath(path0, paint0);
+  }
+  
+  _readdb1(){
+    _dbref.child('User').once().then((DatabaseEvent databaseEvent) {
+      setState((){
+        databasejson=databaseEvent.snapshot.value.toString();
+      });
+    });
+  }
+  Future togglerecording()=>Speechapi.togglerecording(onresult:  (text)=>setState(()=>this.controller.text=text,),
+  onlistening: (islistening){
+  setState(()=>this.islistening=islistening);
 
 
   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
-
+  );
 }

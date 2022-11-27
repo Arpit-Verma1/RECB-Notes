@@ -12,6 +12,7 @@ class It extends StatefulWidget {
 }
 @override
 int c=0;
+bool show=true;
 class _ItState extends State<It> {
   @override
   Widget build(BuildContext context) {
@@ -74,7 +75,7 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
           ElevatedButton(
               onPressed: (){
             setState((){
-
+show=!show;
               if("${widget.a}"=="First year"){
                 c=1;}
               else if("${widget.a}"=="Second year"){
@@ -92,15 +93,15 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
               fontSize: 25,
               shadows: [
                 Shadow(
-                  color: Colors.blue,
+                  color: show==true?Colors.black:Colors.blue,
                   blurRadius: 3,
                 ),
                 Shadow(
-                  color: Colors.blue,
+                  color: show==true?Colors.black:Colors.blue,
                   blurRadius: 6,
                 ),
                 Shadow(
-                  color:Colors.blue,
+                  color:show==true?Colors.black:Colors.blue,
                   blurRadius: 9,
                 ),
 
@@ -109,7 +110,7 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
           ElevatedButton(onPressed: (){
 
             setState((){
-
+show=!show;
               if("${widget.a}"=="First year"){
                 c=2;}
               else if("${widget.a}"=="Second year"){
@@ -127,15 +128,15 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
               fontSize: 25,
               shadows: [
                 Shadow(
-                  color: Colors.blue,
+                  color:show==false?Colors.black:Colors.blue,
                   blurRadius: 3,
                 ),
                 Shadow(
-                  color: Colors.blue,
+                  color: show==false?Colors.black:Colors.blue,
                   blurRadius: 6,
                 ),
                 Shadow(
-                  color:Colors.blue,
+                  color:show==false?Colors.black:Colors.blue,
                   blurRadius: 9,
                 ),
 
@@ -154,7 +155,7 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                     AnimationConfiguration.synchronized(
 
-    duration: const Duration(milliseconds: 2000),
+    duration: const Duration(milliseconds: 1000),
 
     child:ScaleAnimation(
     curve: Curves.easeInExpo,
@@ -251,7 +252,7 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             AnimationConfiguration.synchronized(
 
-                              duration: const Duration(milliseconds: 2000),
+                              duration: const Duration(milliseconds: 1000),
 
                               child:ScaleAnimation(
                                 curve: Curves.easeInExpo,
@@ -335,7 +336,7 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 AnimationConfiguration.synchronized(
 
-                                    duration: const Duration(milliseconds: 2000),
+                                    duration: const Duration(milliseconds: 1000),
 
                                     child:ScaleAnimation(
                                       curve: Curves.easeInExpo,
@@ -409,7 +410,7 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 AnimationConfiguration.synchronized(
 
-                                    duration: const Duration(milliseconds: 2000),
+                                    duration: const Duration(milliseconds: 1000),
 
                                     child:ScaleAnimation(
                                       curve: Curves.easeInExpo,
@@ -461,7 +462,7 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 AnimationConfiguration.synchronized(
 
-                                    duration: const Duration(milliseconds: 2000),
+                                    duration: const Duration(milliseconds: 1000),
 
                                     child:ScaleAnimation(
                                       curve: Curves.easeInExpo,
@@ -547,7 +548,7 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             AnimationConfiguration.synchronized(
 
-                                duration: const Duration(milliseconds: 2000),
+                                duration: const Duration(milliseconds: 1000),
 
                                 child:ScaleAnimation(
                                     curve: Curves.easeInExpo,
@@ -618,7 +619,7 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 AnimationConfiguration.synchronized(
 
-                                    duration: const Duration(milliseconds: 2000),
+                                    duration: const Duration(milliseconds: 1000),
 
                                     child:ScaleAnimation(
                                       curve: Curves.easeInExpo,
@@ -691,7 +692,7 @@ Row(mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 AnimationConfiguration.synchronized(
 
-                                    duration: const Duration(milliseconds: 2000),
+                                    duration: const Duration(milliseconds: 1000),
 
                                     child:ScaleAnimation(
                                       curve: Curves.easeInExpo,

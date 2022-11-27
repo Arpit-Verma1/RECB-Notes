@@ -12,7 +12,6 @@ final Uri params = Uri(
     path: 'arpitv747@gmail.com',
     queryParameters: {
       'subject': "hello arpit verma i loves your app",
-
     }
 );
 class File1 extends StatefulWidget {

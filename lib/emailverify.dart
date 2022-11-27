@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:major/sample.dart';
 import 'package:major/splash.dart';
 
 import 'Utils.dart';

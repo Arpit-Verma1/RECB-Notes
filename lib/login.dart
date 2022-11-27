@@ -51,7 +51,9 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
     Size size=MediaQuery.of(context).size;
     double defaultRegisterSize=size.height-(size.height*0.1);
     containerSize=Tween(begin:size.height*0.1 ,end:defaultRegisterSize).animate(CurvedAnimation(parent: _animationController, curve: Curves.linear));
-    return Form(child:SingleChildScrollView(child:
+    return
+      Scaffold(body:
+      Form(child:SingleChildScrollView(child:
           Container(
                 width: size.width,
                 height: size.height,
@@ -370,7 +372,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                 ),
               ),
 )
-    );
+      ));
   }
 
   Widget buildRegisterContainer() {

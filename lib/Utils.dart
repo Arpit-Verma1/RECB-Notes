@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+
 class Utils{
   static GlobalKey<ScaffoldMessengerState> messengerKey=GlobalKey<ScaffoldMessengerState>();
   static showSnackBar(String?text){
@@ -9,4 +12,8 @@ class Utils{
       ..removeCurrentSnackBar()
       ..showSnackBar(snackbar);
   }
+
 }
+
+
+
